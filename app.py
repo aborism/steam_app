@@ -8,7 +8,7 @@ import json
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from steam_api import get_app_details, extract_preview_urls, calc_attention_label, calc_expectation_label, get_follower_count
 from utils import get_base64_image, get_icon_html
-from components import render_game_card
+from components import render_game_card, render_magic_logo
 
 from PIL import Image
 import base64
@@ -377,6 +377,65 @@ st.markdown(f"""
         border-radius: 4px;
         border: 1px solid #555;
     }}
+    
+    /* ロゴ背景のマナエフェクト */
+    @keyframes mana-rise {{
+        0% {{ transform: translateY(0) scale(0.3); opacity: 0; }}
+        30% {{ opacity: 1; }}
+        100% {{ transform: translateY(-80px) scale(0); opacity: 0; }}
+    }}
+    
+    @keyframes logo-aura {{
+        0%, 100% {{ filter: drop-shadow(0 0 2px rgba(100, 149, 237, 0.15)); }}
+        50% {{ filter: drop-shadow(0 0 8px rgba(138, 43, 226, 0.25)); }}
+    }}
+    
+    .logo-magic-container {{
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        margin-top: -20px;
+        padding: 50px 0;
+        overflow: hidden;
+    }}
+    
+    .magic-particle {{
+        position: absolute;
+        border-radius: 50%;
+        opacity: 0;
+        animation: mana-rise 4s infinite ease-out;
+        z-index: 0;
+    }}
+    
+    /* 20個のマナパーティクル - より派手に */
+    .magic-particle:nth-child(1) {{ left: 5%; top: 85%; width: 10px; height: 10px; background: #6495ED; box-shadow: 0 0 15px #6495ED, 0 0 30px #6495ED; animation-delay: 0s; }}
+    .magic-particle:nth-child(2) {{ left: 15%; top: 90%; width: 8px; height: 8px; background: #8A2BE2; box-shadow: 0 0 12px #8A2BE2, 0 0 25px #8A2BE2; animation-delay: 0.2s; }}
+    .magic-particle:nth-child(3) {{ left: 25%; top: 80%; width: 12px; height: 12px; background: #FFFFFF; box-shadow: 0 0 20px #FFFFFF, 0 0 40px #87CEEB; animation-delay: 0.4s; }}
+    .magic-particle:nth-child(4) {{ left: 35%; top: 88%; width: 9px; height: 9px; background: #9370DB; box-shadow: 0 0 15px #9370DB, 0 0 30px #9370DB; animation-delay: 0.6s; }}
+    .magic-particle:nth-child(5) {{ left: 45%; top: 82%; width: 11px; height: 11px; background: #4169E1; box-shadow: 0 0 18px #4169E1, 0 0 35px #4169E1; animation-delay: 0.8s; }}
+    .magic-particle:nth-child(6) {{ left: 55%; top: 86%; width: 8px; height: 8px; background: #8A2BE2; box-shadow: 0 0 12px #8A2BE2, 0 0 25px #8A2BE2; animation-delay: 1s; }}
+    .magic-particle:nth-child(7) {{ left: 65%; top: 92%; width: 10px; height: 10px; background: #FFFFFF; box-shadow: 0 0 15px #FFFFFF, 0 0 30px #ADD8E6; animation-delay: 1.2s; }}
+    .magic-particle:nth-child(8) {{ left: 75%; top: 84%; width: 7px; height: 7px; background: #6495ED; box-shadow: 0 0 10px #6495ED, 0 0 20px #6495ED; animation-delay: 1.4s; }}
+    .magic-particle:nth-child(9) {{ left: 85%; top: 88%; width: 12px; height: 12px; background: #9370DB; box-shadow: 0 0 20px #9370DB, 0 0 40px #9370DB; animation-delay: 1.6s; }}
+    .magic-particle:nth-child(10) {{ left: 95%; top: 80%; width: 9px; height: 9px; background: #4169E1; box-shadow: 0 0 15px #4169E1, 0 0 30px #4169E1; animation-delay: 1.8s; }}
+    .magic-particle:nth-child(11) {{ left: 10%; top: 95%; width: 6px; height: 6px; background: #FFFFFF; box-shadow: 0 0 10px #FFFFFF, 0 0 20px #87CEEB; animation-delay: 2s; }}
+    .magic-particle:nth-child(12) {{ left: 20%; top: 87%; width: 11px; height: 11px; background: #8A2BE2; box-shadow: 0 0 18px #8A2BE2, 0 0 35px #8A2BE2; animation-delay: 2.2s; }}
+    .magic-particle:nth-child(13) {{ left: 30%; top: 93%; width: 8px; height: 8px; background: #6495ED; box-shadow: 0 0 12px #6495ED, 0 0 25px #6495ED; animation-delay: 2.4s; }}
+    .magic-particle:nth-child(14) {{ left: 40%; top: 78%; width: 10px; height: 10px; background: #9370DB; box-shadow: 0 0 15px #9370DB, 0 0 30px #9370DB; animation-delay: 2.6s; }}
+    .magic-particle:nth-child(15) {{ left: 50%; top: 90%; width: 13px; height: 13px; background: #FFFFFF; box-shadow: 0 0 22px #FFFFFF, 0 0 45px #ADD8E6; animation-delay: 2.8s; }}
+    .magic-particle:nth-child(16) {{ left: 60%; top: 85%; width: 7px; height: 7px; background: #4169E1; box-shadow: 0 0 10px #4169E1, 0 0 20px #4169E1; animation-delay: 3s; }}
+    .magic-particle:nth-child(17) {{ left: 70%; top: 95%; width: 9px; height: 9px; background: #8A2BE2; box-shadow: 0 0 15px #8A2BE2, 0 0 30px #8A2BE2; animation-delay: 3.2s; }}
+    .magic-particle:nth-child(18) {{ left: 80%; top: 82%; width: 11px; height: 11px; background: #6495ED; box-shadow: 0 0 18px #6495ED, 0 0 35px #6495ED; animation-delay: 3.4s; }}
+    .magic-particle:nth-child(19) {{ left: 90%; top: 90%; width: 8px; height: 8px; background: #FFFFFF; box-shadow: 0 0 12px #FFFFFF, 0 0 25px #87CEEB; animation-delay: 3.6s; }}
+    .magic-particle:nth-child(20) {{ left: 50%; top: 98%; width: 14px; height: 14px; background: #9370DB; box-shadow: 0 0 25px #9370DB, 0 0 50px #9370DB; animation-delay: 3.8s; }}
+    
+    .logo-content {{
+        position: relative;
+        z-index: 1;
+        animation: logo-aura 3s infinite ease-in-out;
+    }}
 </style>
 """, unsafe_allow_html=True)
 
@@ -390,22 +449,12 @@ if os.path.exists("reveal_animation.js"):
 # 🎨 タイトルエリア
 # ----------------------------------------------------
 
-# タイトル（中央揃え）
+# タイトル（中央揃え・魔法エフェクト付き）
 if os.path.exists("img/logo_steam_arcana_original.png"):
     logo_b64 = get_base64_image("img/logo_steam_arcana_original.png")
-    st.markdown(f'''
-    <div style="display: flex; flex-direction: column; align-items: center; text-align: center; margin-top: -20px;">
-        <img src="data:image/png;base64,{logo_b64}" width="600">
-        <h5 style="margin-top: 10px;">アーカイブに眠るアーティファクトを求めて</h5>
-    </div>
-    ''', unsafe_allow_html=True)
+    render_magic_logo(logo_b64)
 else:
-    st.markdown(f'''
-    <div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
-        <h1>{get_icon_html("sword", 40)} Steam Arcana</h1>
-        <h5>アーカイブに眠るアーティファクトを求めて</h5>
-    </div>
-    ''', unsafe_allow_html=True)
+    render_magic_logo(None) # デフォルトロゴ
 st.divider()
 
 # ジャンル定義 (JSONから読み込み)
@@ -416,9 +465,19 @@ def load_tags():
     tags = {}
     for category_tags in categories.values():
         tags.update(category_tags)
-    return tags
+    return tags, categories  # カテゴリ情報も返す
 
-TAGS = load_tags()
+TAGS, TAG_CATEGORIES = load_tags()
+
+# カテゴリアイコン
+CATEGORY_ICONS = {
+    "基本": "📦",
+    "人気・システム": "⭐",
+    "シューティング": "🔫",
+    "雰囲気・テーマ": "🎭",
+    "建設・管理": "🏗️",
+    "その他": "📁"
+}
 
 # ============================================
 # 設定エリア（2列×3行グリッド・中央寄せ）
@@ -441,14 +500,28 @@ with settings_area:
     is_coming_soon_mode = "未来" in search_mode
     is_treasure_mode = "古代" in search_mode
     
-    # 2. 探索タグ（マルチセレクト）- 幅広で表示
-    selected_tags = st.multiselect(
+    # 2. 探索タグ（カテゴリ付きマルチセレクト）
+    # カテゴリプレフィックス付きのタグリストを作成
+    categorized_tag_options = []
+    tag_display_to_key = {}  # 表示名 → 実際のキーのマッピング
+    
+    for category, tags_dict in TAG_CATEGORIES.items():
+        icon = CATEGORY_ICONS.get(category, "📁")
+        for tag_name in tags_dict.keys():
+            display_name = f"{icon} {tag_name}"
+            categorized_tag_options.append(display_name)
+            tag_display_to_key[display_name] = tag_name
+    
+    selected_display_tags = st.multiselect(
         "🗺️ 探索タグ",
-        list(TAGS.keys()),
-        default=["ローグライク"],
-        help="選択したタグが主要タグに含まれるゲームを検索",
-        placeholder="ジャンルを選択"
+        categorized_tag_options,
+        default=[],
+        help="未選択で全ジャンルを検索",
+        placeholder="ジャンルを選択（空欄で全ジャンル）"
     )
+    
+    # 表示名を実際のタグ名に変換
+    selected_tags = [tag_display_to_key[dt] for dt in selected_display_tags]
     
     # ----------------------------
     # 高度な設定（エクスパンダーに収納）
@@ -646,6 +719,7 @@ def search_steam_survivor(tags, exclude_tags_list, max_reviews, start_offset=0, 
                     "price": price,
                     "review_count": review_count,
                     "review_desc": review_desc,
+                    "attention_label": calc_attention_label(review_count, review_desc),
                     "date": date,
                 })
             except:
@@ -888,7 +962,6 @@ if search_btn or treasure_btn:
         # 見つかった分だけ表示（20件未満でも可）
         if all_results:
             results = all_results
-            st.balloons()
             status_text.success(f"🎉 お宝発見！ {len(results)}個のアーティファクトを見つけたよ！")
             bar.empty()
         else:

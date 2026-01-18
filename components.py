@@ -1,4 +1,5 @@
 import streamlit as st
+import random
 import os
 from utils import get_base64_image, get_icon_html
 
@@ -126,9 +127,9 @@ def render_game_card(game: dict, col, idx: int):
             # Coming Soon: フォロワー数を表示
             st.caption(f"👥 フォロワー: {follower_count}")
         elif game["review_count"] == 0:
-            st.caption("📜 冒険者の記述: 0")
+            st.caption("📜 日本語のレビュー数: 0")
         else:
-            st.caption(f"📜 冒険者の記述: {game['review_count']}")
+            st.caption(f"📜 日本語のレビュー数: {game['review_count']}")
         
         # 価格（上に移動したため削除）
         
@@ -155,3 +156,28 @@ def render_game_card(game: dict, col, idx: int):
         # 入手ボタン
         btn_type = "primary" if game.get("is_jp_supported") else "secondary"
         st.link_button("🛒 Steamで開く", game["link"], use_container_width=True, type=btn_type)
+
+
+def render_magic_logo(logo_b64=None):
+    """魔法エフェクト付きのロゴを表示"""
+    # 20個の静的パーティクル（CSSで位置・アニメーション定義済み）
+    particles = ''.join(['<div class="magic-particle"></div>' for _ in range(20)])
+    
+    if logo_b64:
+        logo_html = f'<img src="data:image/png;base64,{logo_b64}" width="600">'
+    else:
+        logo_html = f'<h1>{get_icon_html("sword", 40)} Steam Arcana</h1>'
+    
+    st.markdown(f'''
+    <div class="logo-magic-container">
+        {particles}
+        <div class="logo-content">
+            {logo_html}
+            <h5 style="margin-top: 10px;">アーカイブに眠るアーティファクトを求めて</h5>
+        </div>
+    </div>
+    ''', unsafe_allow_html=True)
+
+
+
+
