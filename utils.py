@@ -12,3 +12,4 @@ def get_icon_html(icon_name, width=24):
         b64 = get_base64_image(path)
         return f'<img src="data:image/png;base64,{b64}" width="{width}" style="vertical-align: -4px; margin-right: 5px;">'
     return ""
+
