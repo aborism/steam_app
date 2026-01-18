@@ -667,7 +667,11 @@ def search_steam_survivor(tags, exclude_tags_list, max_reviews, start_offset=0, 
     
     try:
         res = requests.get(base_url, params=params, headers=HEADERS)
-        data = res.json()
+        try:
+            data = res.json()
+        except:
+            # APIからの応答が不正な場合は空リストを返す
+            return []
         soup = BeautifulSoup(data.get("results_html", ""), "html.parser")
         rows = soup.select("a.search_result_row")
         
@@ -797,7 +801,11 @@ def search_coming_soon(tags, exclude_tags_list, start_offset=0, only_japanese=Tr
     
     try:
         res = requests.get(base_url, params=params, headers=HEADERS)
-        data = res.json()
+        try:
+            data = res.json()
+        except:
+            # APIからの応答が不正な場合は空リストを返す
+            return []
         soup = BeautifulSoup(data.get("results_html", ""), "html.parser")
         rows = soup.select("a.search_result_row")
         
@@ -926,34 +934,34 @@ if search_btn or treasure_btn:
     
     # アニメーション表示用コンテナ
     anim_placeholder = st.empty()
-    anim_placeholder.markdown("""
-        <div class="adventure-container">
-            <div class="adventurer" style="left: 0%;"></div>
-        </div>
-        <div style="text-align:center; font-weight:bold; margin-bottom:10px;">未踏の地を探索中...</div>
-    """, unsafe_allow_html=True)
     
     # プログレスバーは非表示（代わりに冒険者が移動）
 
     # Coming Soonモードの場合
     if is_coming_soon_mode:
-        # ランダムな未来を探索（0〜200件先まで）
-        future_offset = random.choice([0, 50, 100, 150])
-        future_msg = "🔮 少し先の未来を観測..."
-        if future_offset >= 100:
-            future_msg = "🔮 遥か遠くの未来を観測..."
-        
-        # 冒険者アニメーション + 未来観測メッセージ
-        anim_placeholder.markdown(f"""
+        # 未来検索のメッセージを表示
+        anim_placeholder.markdown("""
             <div class="adventure-container">
                 <div class="adventurer" style="left: 0%;"></div>
             </div>
-            <div style="text-align:center; font-weight:bold; margin-bottom:10px;">{future_msg}</div>
+            <div style="text-align:center; font-weight:bold; margin-bottom:10px;">未来を観測中...</div>
         """, unsafe_allow_html=True)
-
+        
+        # ランダムにオフセットを選択（少数のAPI呼び出しで済むように）
+        # レート制限回避のため、探索回数を最小限に
+        offset_options = [0, 50, 100]
+        future_offset = random.choice(offset_options)
+        
         results = search_coming_soon(
             selected_tags, exclude_tags, start_offset=future_offset, only_japanese=use_jp_only
         )
+        
+        # 結果がなければオフセット0で再試行
+        if not results and future_offset > 0:
+            time.sleep(0.3)  # レート制限回避
+            results = search_coming_soon(
+                selected_tags, exclude_tags, start_offset=0, only_japanese=use_jp_only
+            )
         
         if results:
             st.markdown(f'#### {get_icon_html("treasure", 28)} 発見したアーティファクト ({len(results)}個)', unsafe_allow_html=True)
@@ -1012,7 +1020,14 @@ if search_btn or treasure_btn:
             st.caption("各カードの「詳細を見る」を開くと動画やスクリーンショットが確認できます")
     
     else:
-        # with st.spinner("⛏️ 地表付近を探索中..."): # アニメーションがあるので削除
+        # 通常検索モード
+        anim_placeholder.markdown("""
+            <div class="adventure-container">
+                <div class="adventurer" style="left: 0%;"></div>
+            </div>
+            <div style="text-align:center; font-weight:bold; margin-bottom:10px;">お宝を探索中...</div>
+        """, unsafe_allow_html=True)
+        
         results = search_steam_survivor(
             selected_tags, exclude_tags, review_threshold,
             start_offset=0, only_japanese=use_jp_only
