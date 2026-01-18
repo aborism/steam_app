@@ -553,11 +553,21 @@ with settings_area:
                 review_threshold = 9999
                 st.info("※未来検索ではレビュー数は使用されません")
             else:
-                review_threshold = st.slider(
+                review_mode = st.select_slider(
                     "💎 レビュー数上限",
-                    0, 500, 50,
-                    help="この数以下のレビュー数を持つゲームを表示（隠れた名作探し）"
+                    options=["少ない", "ふつう", "多い", "指定なし"],
+                    value="指定なし",
+                    help="少ない: 〜50件 / ふつう: 〜500件 / 多い: 〜5000件 / 指定なし: 制限なし"
                 )
+                
+                if review_mode == "少ない":
+                    review_threshold = 50
+                elif review_mode == "ふつう":
+                    review_threshold = 500
+                elif review_mode == "多い":
+                    review_threshold = 5000
+                else:
+                    review_threshold = 500000
 
     st.write("")  # スペーサー
     
@@ -585,9 +595,11 @@ HEADERS = {
 }
 
 
-def is_genre_match(game_tag_ids: list, target_tag_ids: list, exclude_tag_ids: list, check_primary: bool = True) -> bool:
+def is_genre_match(game_tag_ids: list, target_tag_ids: list, exclude_tag_ids: list, check_primary: bool = False) -> bool:
     """
     ジャンル一致判定（改善版）
+    check_primary: Trueなら主要タグ（上位3つ）のみをチェック。Falseなら全タグをチェック。
+    デフォルトをFalseに変更して、検索漏れを防ぐ。
     """
     # 除外タグが含まれていたらFalse
     for etid in exclude_tag_ids:
@@ -598,18 +610,13 @@ def is_genre_match(game_tag_ids: list, target_tag_ids: list, exclude_tag_ids: li
     if not target_tag_ids:
         return True
     
-    # 主要タグ（先頭3つ）をチェック
-    if check_primary:
-        primary_tags = game_tag_ids[:3] if len(game_tag_ids) >= 3 else game_tag_ids
-        for tid in target_tag_ids:
-            if tid in primary_tags:
-                return True
-        return False
-    else:
-        for tid in target_tag_ids:
-            if tid in game_tag_ids:
-                return True
-        return False
+    # 主要タグ（先頭3つ）をチェックするか、全タグをチェックするか
+    tags_to_check = game_tag_ids[:3] if check_primary and len(game_tag_ids) >= 3 else game_tag_ids
+    
+    for tid in target_tag_ids:
+        if tid in tags_to_check:
+            return True
+    return False
 
 
 def extract_app_id(url: str) -> int:
