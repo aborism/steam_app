@@ -629,8 +629,24 @@ def search_steam_survivor(tags, exclude_tags_list, max_reviews, start_offset=0, 
     """Steamストアを検索してゲームリストを取得"""
     base_url = "https://store.steampowered.com/search/results/"
     
-    target_tag_ids = [TAGS[t] for t in tags if t in TAGS]
-    exclude_tag_ids = [TAGS[t] for t in exclude_tags_list if t in TAGS]
+    # タグIDを取得（配列の場合は展開）
+    target_tag_ids = []
+    for t in tags:
+        if t in TAGS:
+            tag_value = TAGS[t]
+            if isinstance(tag_value, list):
+                target_tag_ids.extend(tag_value)
+            else:
+                target_tag_ids.append(tag_value)
+    
+    exclude_tag_ids = []
+    for t in exclude_tags_list:
+        if t in TAGS:
+            tag_value = TAGS[t]
+            if isinstance(tag_value, list):
+                exclude_tag_ids.extend(tag_value)
+            else:
+                exclude_tag_ids.append(tag_value)
     
     search_tag_ids = [str(tid) for tid in target_tag_ids]
     if "492" not in search_tag_ids:
@@ -742,8 +758,24 @@ def search_coming_soon(tags, exclude_tags_list, start_offset=0, only_japanese=Tr
     """Coming Soon（近日公開）のゲームを検索"""
     base_url = "https://store.steampowered.com/search/results/"
     
-    target_tag_ids = [TAGS[t] for t in tags if t in TAGS]
-    exclude_tag_ids = [TAGS[t] for t in exclude_tags_list if t in TAGS]
+    # タグIDを取得（配列の場合は展開）
+    target_tag_ids = []
+    for t in tags:
+        if t in TAGS:
+            tag_value = TAGS[t]
+            if isinstance(tag_value, list):
+                target_tag_ids.extend(tag_value)
+            else:
+                target_tag_ids.append(tag_value)
+    
+    exclude_tag_ids = []
+    for t in exclude_tags_list:
+        if t in TAGS:
+            tag_value = TAGS[t]
+            if isinstance(tag_value, list):
+                exclude_tag_ids.extend(tag_value)
+            else:
+                exclude_tag_ids.append(tag_value)
     
     search_tag_ids = [str(tid) for tid in target_tag_ids]
     if "492" not in search_tag_ids:
