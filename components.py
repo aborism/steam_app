@@ -1,6 +1,7 @@
 import streamlit as st
 import random
 import os
+import html
 from utils import get_base64_image, get_icon_html
 
 def get_badge_icon(attention_label: str) -> str:
@@ -48,8 +49,8 @@ def render_game_card(game: dict, col, idx: int):
     with col:
         app_id = game.get("app_id", 0)
         
-        # 画像
-        img_url = game.get("image") or "https://via.placeholder.com/460x215?text=No+Image"
+        # 画像（XSS対策: URLをエスケープ）
+        img_url = html.escape(game.get("image") or "https://via.placeholder.com/460x215?text=No+Image")
         
         # レアリティ演出判定
         attention = game.get("attention_label", "")
@@ -70,8 +71,9 @@ def render_game_card(game: dict, col, idx: int):
              # st.imageの代わりに統一されたクラスを持つimgタグを使用
              st.markdown(f'<img src="{img_url}" class="preview-image" style="width:100%; object-fit:cover;">', unsafe_allow_html=True)
         
-        # タイトル（2行制限）
-        title_html = f'<div class="game-title">{game["title"]}</div>'
+        # タイトル（2行制限、XSS対策: エスケープ）
+        safe_title = html.escape(game.get("title", ""))
+        title_html = f'<div class="game-title">{safe_title}</div>'
         st.markdown(title_html, unsafe_allow_html=True)
         
         # バッジ行
@@ -141,7 +143,9 @@ def render_game_card(game: dict, col, idx: int):
         if video_url or screenshots or description:
             with st.expander("詳細を見る"): # エクスパンダーのラベルにはHTMLが使えないためテキストのみ
                 if description:
-                    st.markdown(f"_{description}_")
+                    # XSS対策: 説明文をエスケープ
+                    safe_description = html.escape(description)
+                    st.markdown(f"_{safe_description}_")
                 
                 if video_url:
                     st.video(video_url)
@@ -173,7 +177,7 @@ def render_magic_logo(logo_b64=None):
         {particles}
         <div class="logo-content">
             {logo_html}
-            <h5 style="margin-top: 10px;">アーカイブに眠るアーティファクトを求めて</h5>
+            <h5 style="margin-top: 10px;">膨大なアーカイブに眠る<br class="mobile-break">未知なる宝を探し出す</h5>
         </div>
     </div>
     ''', unsafe_allow_html=True)

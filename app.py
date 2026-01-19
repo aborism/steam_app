@@ -61,6 +61,12 @@ st.markdown(f"""
         font-family: 'Noto Sans JP', sans-serif !important;
     }}
 
+    /* スマホなどで改行するためのクラス */
+    .mobile-break {{ display: none; }}
+    @media (max-width: 640px) {{
+        .mobile-break {{ display: block; }}
+    }}
+
     /* ボタンスタイル（モダン・フラッシュ） */
     .stButton>button {{
         background: linear-gradient(135deg, #FFD700 0%, #DAA520 50%, #B8860B 100%);

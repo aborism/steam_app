@@ -1,5 +1,8 @@
-streamlit
-requests
-beautifulsoup4
-Pillow
-lxml
+# Steam Arcana 依存関係
+# 最小バージョン指定（セキュリティパッチ自動適用）
+
+streamlit>=1.52.0
+requests>=2.32.0
+beautifulsoup4>=4.14.0
+Pillow>=12.0.0
+lxml>=6.0.0
