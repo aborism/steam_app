@@ -1146,6 +1146,9 @@ if search_btn or treasure_btn:
     
     # プログレスバーは非表示（代わりに冒険者が移動）
 
+    # 結果データを格納する変数
+    enriched_results = []
+    
     # Coming Soonモードの場合
     if is_coming_soon_mode:
         # 未来検索のメッセージを表示
@@ -1246,7 +1249,7 @@ if search_btn or treasure_btn:
             st.markdown(f'#### {get_icon_html("treasure", 28)} 発見したアーティファクト ({len(results)}個)', unsafe_allow_html=True)
             st.caption("各カードの「詳細を見る」を開くと動画やスクリーンショットが確認できます")
     
-    # 結果がある場合は詳細データ取得とグリッド表示
+    # 結果がある場合は詳細データ取得
     if results:
         # 並列処理で高速化（最大8件同時取得）
         enriched_results = [None] * len(results)
@@ -1276,14 +1279,20 @@ if search_btn or treasure_btn:
         # アニメーションを終了
         anim_placeholder.empty()
         
-        # グリッド表示
-        cols = st.columns(4)
-        for i, game in enumerate(enriched_results):
-            render_game_card(game, cols[i % 4], i)
-            
-            if (i + 1) % 4 == 0 and i + 1 < len(enriched_results):
-                st.write("")
-                cols = st.columns(4)
+        # 結果をセッションに保存
+        st.session_state.search_results = enriched_results
     
-    elif not treasure_btn:
+    elif not treasure_btn and not results:
         st.warning("条件に合うゲームが見つかりませんでした。")
+        st.session_state.search_results = []
+
+# セッションに保存された結果を表示
+if 'search_results' in st.session_state and st.session_state.search_results:
+    # グリッド表示
+    cols = st.columns(4)
+    for i, game in enumerate(st.session_state.search_results):
+        render_game_card(game, cols[i % 4], i)
+        
+        if (i + 1) % 4 == 0 and i + 1 < len(st.session_state.search_results):
+            st.write("")
+            cols = st.columns(4)
