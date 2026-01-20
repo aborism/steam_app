@@ -148,25 +148,42 @@ def render_game_card(game: dict, col, idx: int):
                     st.markdown(f"_{safe_description}_")
                 
                 if video_url:
-                    if ".m3u8" in video_url:
-                        # HLS形式の場合はhls.jsを使用
-                        hls_html = f'''
-                        <style>html,body{{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:transparent;display:flex;justify-content:center;align-items:center}}video{{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;border-radius:8px;outline:none}}</style>
-                        <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-                        <video id="hls-video" controls preload="none"></video>
-                        <script>
-                            var video = document.getElementById('hls-video');
-                            if (Hls.isSupported()) {{
-                                var hls = new Hls();
-                                hls.loadSource('{video_url}');
-                                hls.attachMedia(video);
-                            }} else if (video.canPlayType('application/vnd.apple.mpegurl')) {{
-                                video.src = '{video_url}';
-                            }}
-                        </script>
-                        '''
-                        # 高さを調整して少し余裕を持たせる（カット防止）
-                        st.components.v1.html(hls_html, height=225)
+                        # HLS形式の動画ロードロジック（軽量化のため遅延ロード）
+                        video_key = f"video_loaded_{app_id}"
+                        
+                        # セッションステート初期化
+                        if video_key not in st.session_state:
+                            st.session_state[video_key] = False
+
+                        if st.session_state[video_key]:
+                            # 読み込み済み：動画プレイヤーを表示
+                            hls_html = f'''
+                            <style>html,body{{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:transparent;display:flex;justify-content:center;align-items:center}}video{{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;border-radius:8px;outline:none}}</style>
+                            <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+                            <video id="hls-video" controls preload="none"></video>
+                            <script>
+                                var video = document.getElementById('hls-video');
+                                if (Hls.isSupported()) {{
+                                    var hls = new Hls();
+                                    hls.loadSource('{video_url}');
+                                    hls.attachMedia(video);
+                                }} else if (video.canPlayType('application/vnd.apple.mpegurl')) {{
+                                    video.src = '{video_url}';
+                                }}
+                            </script>
+                            '''
+                            st.components.v1.html(hls_html, height=225)
+                            
+                            # 閉じるボタン（動画をアンロードして軽くする）
+                            if st.button("❌ 動画を閉じる", key=f"close_video_{app_id}", use_container_width=True):
+                                st.session_state[video_key] = False
+                                st.rerun()
+                                
+                        else:
+                            # 未読み込み：読み込みボタンを表示
+                            if st.button("📺 動画を読み込む", key=f"load_video_{app_id}", use_container_width=True):
+                                st.session_state[video_key] = True
+                                st.rerun()
                     else:
                         st.video(video_url)
                 
