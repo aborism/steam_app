@@ -141,10 +141,7 @@ def render_game_card(game: dict, col, idx: int):
         description = game.get("description", "")
         
         if video_url or screenshots or description:
-            # 動画再生中かどうかを判定
-            is_video_active = st.session_state.get(f"video_loaded_{app_id}", False)
-            
-            with st.expander("詳細を見る", expanded=is_video_active): # 動画再生中は開いたままにする
+            with st.expander("詳細を見る"):
                 if description:
                     # XSS対策: 説明文をエスケープ
                     safe_description = html.escape(description)
@@ -152,20 +149,33 @@ def render_game_card(game: dict, col, idx: int):
                 
                 if video_url:
                     if ".m3u8" in video_url:
-                        # HLS形式の動画ロードロジック（軽量化のため遅延ロード）
-                        video_key = f"video_loaded_{app_id}"
-                        
-                        # セッションステート初期化
-                        if video_key not in st.session_state:
-                            st.session_state[video_key] = False
-
-                        if st.session_state[video_key]:
-                            # 読み込み済み：動画プレイヤーを表示
-                            hls_html = f'''
-                            <style>html,body{{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:transparent;display:flex;justify-content:center;align-items:center}}video{{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;border-radius:8px;outline:none}}</style>
-                            <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-                            <video id="hls-video" controls preload="none"></video>
-                            <script>
+                        # HLS形式: クライアントサイドで動的に読み込む（リロードなし）
+                        # JavaScriptでボタンクリック時にプレイヤーを生成
+                        video_component_html = f'''
+                        <style>
+                            html,body{{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:transparent}}
+                            #player-container{{width:100%;height:100%;display:flex;align-items:center;justify-content:center}}
+                            #load-btn{{
+                                background: linear-gradient(135deg, #3a3a5c 0%, #2a2a3c 100%);
+                                border: 1px solid #5a5a7a;
+                                color: #fff;
+                                padding: 12px 24px;
+                                border-radius: 8px;
+                                cursor: pointer;
+                                font-size: 14px;
+                                transition: all 0.2s;
+                            }}
+                            #load-btn:hover{{background: linear-gradient(135deg, #4a4a6c 0%, #3a3a4c 100%);}}
+                            video{{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;border-radius:8px;outline:none}}
+                        </style>
+                        <div id="player-container">
+                            <button id="load-btn" onclick="loadVideo()">📺 動画を読み込む</button>
+                        </div>
+                        <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+                        <script>
+                            function loadVideo() {{
+                                var container = document.getElementById('player-container');
+                                container.innerHTML = '<video id="hls-video" controls autoplay></video>';
                                 var video = document.getElementById('hls-video');
                                 if (Hls.isSupported()) {{
                                     var hls = new Hls();
@@ -174,20 +184,10 @@ def render_game_card(game: dict, col, idx: int):
                                 }} else if (video.canPlayType('application/vnd.apple.mpegurl')) {{
                                     video.src = '{video_url}';
                                 }}
-                            </script>
-                            '''
-                            st.components.v1.html(hls_html, height=225)
-                            
-                            # 閉じるボタン（動画をアンロードして軽くする）
-                            if st.button("❌ 動画を閉じる", key=f"close_video_{app_id}", use_container_width=True):
-                                st.session_state[video_key] = False
-                                st.rerun()
-                                
-                        else:
-                            # 未読み込み：読み込みボタンを表示
-                            if st.button("📺 動画を読み込む", key=f"load_video_{app_id}", use_container_width=True):
-                                st.session_state[video_key] = True
-                                st.rerun()
+                            }}
+                        </script>
+                        '''
+                        st.components.v1.html(video_component_html, height=225)
                     else:
                         st.video(video_url)
                 
