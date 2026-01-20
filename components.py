@@ -148,7 +148,27 @@ def render_game_card(game: dict, col, idx: int):
                     st.markdown(f"_{safe_description}_")
                 
                 if video_url:
-                    st.video(video_url)
+                    if ".m3u8" in video_url:
+                        # HLS形式の場合はhls.jsを使用
+                        hls_html = f'''
+                        <style>body {{ margin: 0; overflow: hidden; background-color: black; }}</style>
+                        <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+                        <video id="hls-video" controls style="width:100%; height:100%; object-fit:contain; border-radius:8px;"></video>
+                        <script>
+                            var video = document.getElementById('hls-video');
+                            if (Hls.isSupported()) {{
+                                var hls = new Hls();
+                                hls.loadSource('{video_url}');
+                                hls.attachMedia(video);
+                            }} else if (video.canPlayType('application/vnd.apple.mpegurl')) {{
+                                video.src = '{video_url}';
+                            }}
+                        </script>
+                        '''
+                        # 高さを調整（16:9のアスペクト比を考慮して少し小さめに設定）
+                        st.components.v1.html(hls_html, height=215)
+                    else:
+                        st.video(video_url)
                 
                 if screenshots:
                     # スクリーンショットを2列で表示

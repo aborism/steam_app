@@ -68,14 +68,25 @@ st.markdown(f"""
     }}
 
     /* ボタンスタイル（モダン・フラッシュ） */
-    .stButton>button {{
-        background: linear-gradient(135deg, #FFD700 0%, #DAA520 50%, #B8860B 100%);
-        color: #000000; 
-        border: 1px solid #FFF8DC; 
-        border-radius: 8px;
-        font-weight: bold; 
-        font-size: 16px;
-        text-shadow: 0px 1px 1px rgba(255, 255, 255, 0.4); 
+    /* ボタンスタイル（強制適用） */
+    div[data-testid="stButton"] button, 
+    div.stButton button {{
+        background: linear-gradient(135deg, #FFD700 0%, #DAA520 50%, #B8860B 100%) !important;
+        border: 1px solid #FFF8DC !important; 
+        border-radius: 8px !important;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+        transition: all 0.2s ease;
+    }}
+    
+    /* ボタン内のテキスト（最重要：pタグをターゲット） */
+    div[data-testid="stButton"] button p {{
+        font-family: 'DotGothic16', sans-serif !important;
+        font-weight: normal !important;
+        font-size: 16px !important; /* 18pxから16pxに変更 */
+        color: #000000 !important; 
+        text-shadow: 0px 1px 1px rgba(255, 255, 255, 0.4);
+        margin: 0 !important; /* 余計なマージン削除 */
+    }} 
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.4);
         transition: all 0.2s ease;
     }}
@@ -719,29 +730,38 @@ with settings_area:
         adv_col1, adv_col2 = st.columns(2)
         
         with adv_col1:
-            # 除外タグ
-            exclude_tags = st.multiselect(
+            # 除外タグ（カテゴリ表示に対応）
+            selected_exclude_display_tags = st.multiselect(
                 "🚫 除外タグ",
-                list(TAGS.keys()),
+                categorized_tag_options,
                 default=[],
                 help="これらのタグが含まれるゲームを除外",
                 placeholder="除外するジャンルを選択"
             )
+            # 表示名を実際のタグ名に変換
+            exclude_tags = [tag_display_to_key[dt] for dt in selected_exclude_display_tags]
             
-            # 対応言語
-            jp_mode = st.radio(
-                "🌐 対応言語",
-                ["🗾 日本語", "🌐 全言語"],
-                index=0,
-                horizontal=True
-            )
+            # 通常モードの場合、ここに対応言語を表示
+            if not is_coming_soon_mode:
+                jp_mode = st.radio(
+                    "🌐 対応言語",
+                    ["🗾 日本語", "🌐 全言語"],
+                    index=0,
+                    horizontal=True
+                )
         
         with adv_col2:
-            # レビュー数フィルター（Coming Soon以外）
+            # 未来検索モードの場合、ここに対応言語を表示（レビュー数は不要）
             if is_coming_soon_mode:
+                jp_mode = st.radio(
+                    "🌐 対応言語",
+                    ["🗾 日本語", "🌐 全言語"],
+                    index=0,
+                    horizontal=True
+                )
                 review_threshold = 9999
-                st.info("※未来検索ではレビュー数は使用されません")
             else:
+                # レビュー数フィルター（Coming Soon以外）
                 review_mode = st.select_slider(
                     "💎 レビュー数上限",
                     options=["少ない", "ふつう", "多い", "指定なし"],
@@ -762,14 +782,14 @@ with settings_area:
     
     # 検索ボタン（全幅）
     if is_coming_soon_mode:
-        search_btn = st.button("🔮 未来の頁を開く", type="primary", use_container_width=True)
+        search_btn = st.button("🔮 未来の章を開く", type="primary", use_container_width=True)
         treasure_btn = False
     elif is_treasure_mode:
         search_btn = False
-        treasure_btn = st.button("📜 古代の頁を開く", type="primary", use_container_width=True)
+        treasure_btn = st.button("📜 古代の章を開く", type="primary", use_container_width=True)
     else:
         treasure_btn = False
-        search_btn = st.button("🗺️ 新しい頁を開く", type="primary", use_container_width=True)
+        search_btn = st.button("🗺️ 新しい章を開く", type="primary", use_container_width=True)
 
 st.divider()
 
