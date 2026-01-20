@@ -151,26 +151,9 @@ def render_game_card(game: dict, col, idx: int):
                     if ".m3u8" in video_url:
                         # HLS形式の場合はhls.jsを使用
                         hls_html = f'''
-                        <style>
-                            html, body {{ 
-                                margin: 0; padding: 0; 
-                                width: 100%; height: 100%; 
-                                overflow: hidden; 
-                                background-color: transparent; 
-                                display: flex; 
-                                justify-content: center; 
-                                align-items: center; 
-                            }}
-                            video {{ 
-                                max-width: 100%; max-height: 100%; 
-                                width: auto; height: auto; 
-                                object-fit: contain; 
-                                border-radius: 8px; 
-                                outline: none; 
-                            }}
-                        </style>
+                        <style>html,body{{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:transparent;display:flex;justify-content:center;align-items:center}}video{{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;border-radius:8px;outline:none}}</style>
                         <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-                        <video id="hls-video" controls></video>
+                        <video id="hls-video" controls preload="none"></video>
                         <script>
                             var video = document.getElementById('hls-video');
                             if (Hls.isSupported()) {{
