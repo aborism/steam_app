@@ -141,7 +141,10 @@ def render_game_card(game: dict, col, idx: int):
         description = game.get("description", "")
         
         if video_url or screenshots or description:
-            with st.expander("詳細を見る"): # エクスパンダーのラベルにはHTMLが使えないためテキストのみ
+            # 動画再生中かどうかを判定
+            is_video_active = st.session_state.get(f"video_loaded_{app_id}", False)
+            
+            with st.expander("詳細を見る", expanded=is_video_active): # 動画再生中は開いたままにする
                 if description:
                     # XSS対策: 説明文をエスケープ
                     safe_description = html.escape(description)
