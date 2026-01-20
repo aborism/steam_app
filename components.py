@@ -64,12 +64,16 @@ def render_game_card(game: dict, col, idx: int):
         elif "太陽" in attention:
             reveal_class = "reveal-sun"
             
+        # 最初の4枚は優先読み込み、それ以降は遅延読み込み
+        loading_attr = 'eager' if idx < 4 else 'lazy'
+        priority_attr = 'fetchpriority="high"' if idx < 4 else ''
+        
         if reveal_class:
              # 特殊アニメーション付き画像
-             st.markdown(f'<img src="{img_url}" class="preview-image {reveal_class}" style="width:100%; object-fit:cover;">', unsafe_allow_html=True)
+             st.markdown(f'<img src="{img_url}" class="preview-image {reveal_class}" style="width:100%; object-fit:cover;" decoding="async" loading="{loading_attr}" {priority_attr}>', unsafe_allow_html=True)
         else:
              # 通常の画像
-             st.markdown(f'<img src="{img_url}" class="preview-image" style="width:100%; object-fit:cover;">', unsafe_allow_html=True)
+             st.markdown(f'<img src="{img_url}" class="preview-image" style="width:100%; object-fit:cover;" decoding="async" loading="{loading_attr}" {priority_attr}>', unsafe_allow_html=True)
         
         # タイトル（2行制限、XSS対策: エスケープ）
         safe_title = html.escape(game.get("title", ""))
@@ -192,11 +196,17 @@ def render_game_card(game: dict, col, idx: int):
                         st.video(video_url)
                 
                 if screenshots:
-                    # スクリーンショットを2列で表示
+                    # スクリーンショットを2列で表示（遅延読み込み）
                     ss_cols = st.columns(2)
                     for i, ss_url in enumerate(screenshots[:4]):
                         if ss_url:
-                            ss_cols[i % 2].image(ss_url, use_container_width=True)
+                            # XSS対策: URLをエスケープ
+                            safe_ss_url = html.escape(ss_url)
+                            # loading="lazy" でネイティブ遅延読み込み
+                            ss_cols[i % 2].markdown(
+                                f'<img src="{safe_ss_url}" loading="lazy" style="width:100%; border-radius:4px;">',
+                                unsafe_allow_html=True
+                            )
         
         # 入手ボタン
         btn_type = "primary" if game.get("is_jp_supported") else "secondary"

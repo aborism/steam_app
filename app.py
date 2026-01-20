@@ -34,6 +34,14 @@ if os.path.exists("img/catgirl_run.gif"):
 # 🧛 カスタムCSS
 # ----------------------------------------------------
 st.markdown(f"""
+<!-- Preconnect: 画像/フォント読み込み高速化 -->
+<link rel="preconnect" href="https://shared.cloudflare.steamstatic.com">
+<link rel="preconnect" href="https://cdn.cloudflare.steamstatic.com">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="dns-prefetch" href="https://store.steampowered.com">
+<link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+
 <style>
     /* Google Fonts 読み込み */
     @import url('https://fonts.googleapis.com/css2?family=DotGothic16&family=Noto+Sans+JP:wght@400;700&display=swap');
