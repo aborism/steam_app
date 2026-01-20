@@ -152,12 +152,21 @@ def render_game_card(game: dict, col, idx: int):
                         # HLS形式の場合はhls.jsを使用
                         hls_html = f'''
                         <style>
-                            html, body {{ margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: transparent; }}
-                            video {{ 
-                                position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+                            html, body {{ 
+                                margin: 0; padding: 0; 
                                 width: 100%; height: 100%; 
-                                object-fit: contain; /* アスペクト比を維持して枠内に収める */
-                                outline: none; border-radius: 8px;
+                                overflow: hidden; 
+                                background-color: transparent; 
+                                display: flex; 
+                                justify-content: center; 
+                                align-items: center; 
+                            }}
+                            video {{ 
+                                max-width: 100%; max-height: 100%; 
+                                width: auto; height: auto; 
+                                object-fit: contain; 
+                                border-radius: 8px; 
+                                outline: none; 
                             }}
                         </style>
                         <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
