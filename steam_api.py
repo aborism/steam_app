@@ -225,12 +225,24 @@ def extract_preview_urls(steam_data: dict) -> dict:
     video_thumbnail = None
     screenshots = []
     
-    # 動画（最初の1つ）
+    # 動画（最初の1つ）- 新しいSteam API形式に対応
     movies = steam_data.get("movies", [])
     if movies:
         first_movie = movies[0]
+        # 旧形式（webm）を優先
         webm = first_movie.get("webm", {})
         video_url = webm.get("480") or webm.get("max")
+        
+        # 新形式（HLS/DASH）にフォールバック
+        if not video_url:
+            # mp4形式を優先（最も互換性が高い）
+            mp4 = first_movie.get("mp4", {})
+            video_url = mp4.get("480") or mp4.get("max")
+        
+        # それでもない場合はHLSを使用（ブラウザサポートが必要）
+        if not video_url:
+            video_url = first_movie.get("hls_h264")
+        
         video_thumbnail = first_movie.get("thumbnail")
     
     # スクリーンショット（最大5枚）

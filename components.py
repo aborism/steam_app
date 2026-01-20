@@ -65,10 +65,10 @@ def render_game_card(game: dict, col, idx: int):
             reveal_class = "reveal-sun"
             
         if reveal_class:
-             # HTMLコンテナは削除し、直接imgタグを描画（アニメーション失敗対策）
+             # 特殊アニメーション付き画像
              st.markdown(f'<img src="{img_url}" class="preview-image {reveal_class}" style="width:100%; object-fit:cover;">', unsafe_allow_html=True)
         else:
-             # st.imageの代わりに統一されたクラスを持つimgタグを使用
+             # 通常の画像
              st.markdown(f'<img src="{img_url}" class="preview-image" style="width:100%; object-fit:cover;">', unsafe_allow_html=True)
         
         # タイトル（2行制限、XSS対策: エスケープ）

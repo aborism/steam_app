@@ -442,6 +442,51 @@ st.markdown(f"""
         z-index: 1;
         animation: logo-aura 3s infinite ease-in-out;
     }}
+    
+    /* トップに戻るボタン */
+    .scroll-to-top {{
+        position: fixed;
+        bottom: 40px;
+        right: 40px;
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, #FFD700 0%, #DAA520 50%, #B8860B 100%);
+        border: 2px solid #FFF8DC;
+        border-radius: 50%;
+        cursor: pointer;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        color: #000;
+        box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    }}
+    .scroll-to-top.visible {{
+        opacity: 1;
+        visibility: visible;
+    }}
+    .scroll-to-top:hover {{
+        transform: translateY(-3px) scale(1.1);
+        background: linear-gradient(135deg, #FFF8DC 0%, #FFD700 100%);
+        box-shadow: 0 6px 20px rgba(255, 215, 0, 0.6), 0 0 30px rgba(255, 215, 0, 0.3);
+    }}
+    .scroll-to-top:active {{
+        transform: translateY(-1px) scale(1.05);
+    }}
+    
+    @media (max-width: 640px) {{
+        .scroll-to-top {{
+            bottom: 20px;
+            right: 20px;
+            width: 45px;
+            height: 45px;
+            font-size: 20px;
+        }}
+    }}
 </style>
 """, unsafe_allow_html=True)
 
@@ -450,6 +495,144 @@ if os.path.exists("reveal_animation.js"):
     with open("reveal_animation.js", "r", encoding="utf-8") as f:
         js_code = f.read()
     st.components.v1.html(f"<script>{js_code}</script>", height=0)
+
+# トップに戻るボタン（親ドキュメントに挿入）
+scroll_to_top_html = """
+<script>
+(function() {
+    try {
+        // 親ドキュメントを取得
+        var parentDoc = window.parent.document;
+        
+        // 既存のボタンがあれば削除
+        var existingBtn = parentDoc.getElementById('scroll-to-top-btn-main');
+        if (existingBtn) {
+            existingBtn.remove();
+        }
+        
+        // 既存のスタイルがあれば削除
+        var existingStyle = parentDoc.getElementById('scroll-to-top-style');
+        if (existingStyle) {
+            existingStyle.remove();
+        }
+        
+        // CSSを親ドキュメントに追加
+        var style = parentDoc.createElement('style');
+        style.id = 'scroll-to-top-style';
+        style.textContent = `
+            #scroll-to-top-btn-main {
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                width: 40px;
+                height: 40px;
+                background: rgba(50, 50, 50, 0.8);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                border-radius: 8px;
+                cursor: pointer;
+                opacity: 0;
+                visibility: hidden;
+                transition: all 0.3s ease;
+                z-index: 99999;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 16px;
+                color: rgba(255, 255, 255, 0.8);
+                font-family: sans-serif;
+                backdrop-filter: blur(4px);
+            }
+            #scroll-to-top-btn-main.visible {
+                opacity: 0.7;
+                visibility: visible;
+            }
+            #scroll-to-top-btn-main:hover {
+                opacity: 1;
+                background: rgba(70, 70, 70, 0.9);
+                color: #fff;
+            }
+            @media (max-width: 640px) {
+                #scroll-to-top-btn-main {
+                    bottom: 80px;
+                    right: 10px;
+                    width: 36px;
+                    height: 36px;
+                    font-size: 14px;
+                }
+            }
+        `;
+        parentDoc.head.appendChild(style);
+        
+        // ボタンを作成して親ドキュメントのbodyに追加
+        var btn = parentDoc.createElement('div');
+        btn.id = 'scroll-to-top-btn-main';
+        btn.innerHTML = '▲';
+        btn.title = 'トップに戻る';
+        parentDoc.body.appendChild(btn);
+        
+        // スクロールコンテナを取得（section.stMainを最優先）
+        var scrollContainer = parentDoc.querySelector('section.stMain') ||
+                              parentDoc.querySelector('section.main') ||
+                              parentDoc.querySelector('[data-testid="stAppViewContainer"]') ||
+                              parentDoc.documentElement;
+        
+        function checkScroll() {
+            // section.stMainのスクロール位置を直接取得
+            var stMain = parentDoc.querySelector('section.stMain');
+            var scrollTop = 0;
+            
+            if (stMain) {
+                scrollTop = stMain.scrollTop;
+            }
+            
+            // 他のコンテナも確認
+            scrollTop = Math.max(
+                scrollTop,
+                scrollContainer.scrollTop || 0,
+                parentDoc.documentElement.scrollTop || 0,
+                parentDoc.body.scrollTop || 0,
+                window.parent.scrollY || 0
+            );
+            
+            if (scrollTop > 300) {
+                btn.classList.add('visible');
+            } else {
+                btn.classList.remove('visible');
+            }
+        }
+        
+        // スクロールイベントをリッスン（stMainを最優先）
+        var stMainContainer = parentDoc.querySelector('section.stMain');
+        if (stMainContainer) {
+            stMainContainer.addEventListener('scroll', checkScroll);
+        }
+        scrollContainer.addEventListener('scroll', checkScroll);
+        window.parent.addEventListener('scroll', checkScroll);
+        
+        // 定期的にチェック（Streamlitの動的更新対策）
+        setInterval(checkScroll, 300);
+        
+        // クリックでトップへスクロール
+        btn.addEventListener('click', function() {
+            // section.stMainを最優先でスクロール
+            var stMain = parentDoc.querySelector('section.stMain');
+            if (stMain) {
+                stMain.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+            scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
+            parentDoc.documentElement.scrollTo({ top: 0, behavior: 'smooth' });
+            window.parent.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+        
+        checkScroll();
+        
+    } catch (e) {
+        console.error('Scroll to top button error:', e);
+    }
+})();
+</script>
+"""
+st.components.v1.html(scroll_to_top_html, height=0)
 
 # ----------------------------------------------------
 # 🎨 タイトルエリア

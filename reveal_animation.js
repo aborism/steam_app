@@ -17,7 +17,7 @@
                 if (entry.isIntersecting) {
                     setTimeout(function () {
                         entry.target.classList.add('animated');
-                    }, 300);
+                    }, 100);
                     observer.unobserve(entry.target);
                 }
             });
@@ -35,7 +35,7 @@
         observeReveal();
 
         // 定期的にチェック（Streamlitの動的描画対策）
-        setInterval(observeReveal, 500);
+        setInterval(observeReveal, 200);
 
     } catch (e) {
         console.error("Animation script error:", e);
