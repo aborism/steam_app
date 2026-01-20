@@ -152,8 +152,13 @@ def render_game_card(game: dict, col, idx: int):
                         # HLS形式の場合はhls.jsを使用
                         hls_html = f'''
                         <style>
-                            body {{ margin: 0; padding: 0; overflow: hidden; background-color: transparent; width: 100%; height: 100%; }}
-                            video {{ width: 100%; height: 100%; object-fit: contain; border-radius: 8px; outline: none; display: block; }}
+                            html, body {{ margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: transparent; }}
+                            video {{ 
+                                position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+                                width: 100%; height: 100%; 
+                                object-fit: contain; /* アスペクト比を維持して枠内に収める */
+                                outline: none; border-radius: 8px;
+                            }}
                         </style>
                         <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
                         <video id="hls-video" controls></video>
@@ -168,8 +173,8 @@ def render_game_card(game: dict, col, idx: int):
                             }}
                         </script>
                         '''
-                        # 高さを調整（少し小さめに設定）
-                        st.components.v1.html(hls_html, height=200)
+                        # 高さを調整して少し余裕を持たせる（カット防止）
+                        st.components.v1.html(hls_html, height=225)
                     else:
                         st.video(video_url)
                 
