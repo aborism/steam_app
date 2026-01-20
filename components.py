@@ -148,6 +148,7 @@ def render_game_card(game: dict, col, idx: int):
                     st.markdown(f"_{safe_description}_")
                 
                 if video_url:
+                    if ".m3u8" in video_url:
                         # HLS形式の動画ロードロジック（軽量化のため遅延ロード）
                         video_key = f"video_loaded_{app_id}"
                         
