@@ -534,7 +534,7 @@ scroll_to_top_html = """
             #scroll-to-top-btn-main {
                 position: fixed;
                 bottom: 20px;
-                right: 20px;
+                left: 20px; /* 右側(right)から左側(left)に変更 */
                 width: 40px;
                 height: 40px;
                 background: rgba(50, 50, 50, 0.8);
@@ -565,7 +565,7 @@ scroll_to_top_html = """
             @media (max-width: 640px) {
                 #scroll-to-top-btn-main {
                     bottom: 80px;
-                    right: 10px;
+                    left: 10px; /* スマホでも左側 */
                     width: 36px;
                     height: 36px;
                     font-size: 14px;
