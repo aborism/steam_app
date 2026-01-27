@@ -161,12 +161,24 @@ def calc_attention_label(review_count: int, review_desc: str = "") -> str:
     # レビュー評価文字列に基づいて判定
     review_lower = review_desc.lower()
     
-    # 圧倒的好評
+    # 圧倒的好評（最優先）
     if "overwhelmingly positive" in review_lower or "圧倒的に好評" in review_desc:
         return "伝説の宝箱"
     
+    # 隠れた名作（レビュー100件以下 && 非常に好評以上）
+    # ※ 圧倒的好評は上で判定済みなので、ここは「非常に好評」が対象
+    is_very_positive = "very positive" in review_lower or "非常に好評" in review_desc
+    if is_very_positive and review_count <= 100:
+        return "隠れた名作"
+
+    # 新芽（レビュー10件以下 && 好評以上）
+    # ※ 圧倒的好評・非常に好評・隠れた名作は判定済み
+    is_positive = "positive" in review_lower or "好評" in review_desc
+    if is_positive and review_count <= 10:
+        return "新芽"
+    
     # 非常に好評
-    elif "very positive" in review_lower or "非常に好評" in review_desc:
+    elif is_very_positive:
         return "金の宝箱"
     
     # やや好評
@@ -174,7 +186,7 @@ def calc_attention_label(review_count: int, review_desc: str = "") -> str:
         return "銅の宝箱"
     
     # 好評（Positive、ただし上記以外）
-    elif "positive" in review_lower or "好評" in review_desc:
+    elif is_positive:
         return "銀の宝箱"
     
     # 賛否両論

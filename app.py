@@ -771,20 +771,24 @@ with settings_area:
             else:
                 # レビュー数フィルター（Coming Soon以外）
                 review_mode = st.select_slider(
-                    "💎 レビュー数上限",
+                    "💎 レビュー数フィルター",
                     options=["少ない", "ふつう", "多い", "指定なし"],
                     value="指定なし",
-                    help="少ない: 〜50件 / ふつう: 〜500件 / 多い: 〜5000件 / 指定なし: 制限なし"
+                    help="少ない: 〜50件 / ふつう: 51件〜500件 / 多い: 501件〜 / 指定なし: 制限なし"
                 )
                 
+                # デフォルト値（最小0、最大無制限）
+                min_reviews = 0
+                max_reviews = 9999999
+                
                 if review_mode == "少ない":
-                    review_threshold = 50
+                    max_reviews = 50
                 elif review_mode == "ふつう":
-                    review_threshold = 500
+                    min_reviews = 51
+                    max_reviews = 500
                 elif review_mode == "多い":
-                    review_threshold = 5000
-                else:
-                    review_threshold = 500000
+                    min_reviews = 501
+                # 指定なしの場合はデフォルトのまま
 
     st.write("")  # スペーサー
     
@@ -842,7 +846,7 @@ def extract_app_id(url: str) -> int:
     return int(match.group(1)) if match else None
 
 
-def search_steam_survivor(tags, exclude_tags_list, max_reviews, start_offset=0, only_japanese=True):
+def search_steam_survivor(tags, exclude_tags_list, min_reviews=0, max_reviews=9999999, start_offset=0, only_japanese=True):
     """Steamストアを検索してゲームリストを取得"""
     base_url = "https://store.steampowered.com/search/results/"
     
@@ -935,7 +939,7 @@ def search_steam_survivor(tags, exclude_tags_list, max_reviews, start_offset=0, 
                     if desc_parts:
                         review_desc = desc_parts[0] if len(desc_parts[0]) < 50 else "好評"
                 
-                if review_count > max_reviews:
+                if review_count < min_reviews or review_count > max_reviews:
                     continue
                 
                 img_tag = row.select_one("img")
@@ -1209,7 +1213,7 @@ if search_btn or treasure_btn:
             status_text.markdown(f"### 🎰 探索中: 深度 {random_offset}m (発見: {len(all_results)}個/{min_results}個)")
             
             found_games = search_steam_survivor(
-                selected_tags, exclude_tags, review_threshold,
+                selected_tags, exclude_tags, min_reviews=min_reviews, max_reviews=max_reviews,
                 start_offset=random_offset, only_japanese=use_jp_only
             )
             
@@ -1249,7 +1253,7 @@ if search_btn or treasure_btn:
         """, unsafe_allow_html=True)
         
         results = search_steam_survivor(
-            selected_tags, exclude_tags, review_threshold,
+            selected_tags, exclude_tags, min_reviews=min_reviews, max_reviews=max_reviews,
             start_offset=0, only_japanese=use_jp_only
         )
         

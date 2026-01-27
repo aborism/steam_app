@@ -23,6 +23,10 @@ def get_badge_icon(attention_label: str) -> str:
         icon_name = "demon_treasurebox"
     elif "未開の宝箱" in attention_label:
         icon_name = "unexplored_treasurebox"
+    elif "隠れた名作" in attention_label:
+        icon_name = "gem"  # 既存アイコンがない場合はデフォルトアイコン等での代用を検討するが、今回はgemを想定
+    elif "新芽" in attention_label:
+        icon_name = "sprout"
     
     # 塔（期待度）
     elif "那由多の塔" in attention_label:
@@ -95,6 +99,10 @@ def render_game_card(game: dict, col, idx: int):
                 glow_class = "glow-legendary"
             elif "金" in attention or "太陽" in attention:
                 glow_class = "glow-gold"
+            elif "隠れた名作" in attention:
+                glow_class = "gem-badge"
+            elif "新芽" in attention:
+                glow_class = "sprout-badge"
             elif "銀" in attention or "月" in attention:
                 glow_class = "glow-silver"
             
