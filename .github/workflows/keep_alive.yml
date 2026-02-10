@@ -1,0 +1,37 @@
+name: Streamlit Keep Alive
+
+on:
+  schedule:
+    # 30分ごとに実行 (サーバーの負荷を考慮し、短すぎない間隔に設定)
+    - cron: '*/30 * * * *'
+  # 手動実行用 (テストや緊急時のために追加)
+  workflow_dispatch:
+
+jobs:
+  keep_alive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wake up Streamlit App
+        env:
+          # セキュリティのため、GitHub Secretsに設定することを推奨します。
+          # 設定方法: Settings > Secrets and variables > Actions > New repository secret
+          # 名前: STREAMLIT_APP_URL
+          # 値: アプリのURL (例: https://your-app-name.streamlit.app/)
+          APP_URL: ${{ secrets.STEAMARCNA }}
+        run: |
+          if [ -z "$APP_URL" ]; then
+            echo "Error: APP_URL is not set. Please set the STREAMLIT_APP_URL secret or update the workflow file directly."
+            # 直接URLを書き込む場合は、以下の行のコメントを外し、URLを設定してください。
+            # APP_URL="https://your-app-name.streamlit.app/"
+            exit 1
+          fi
+          
+          echo "Pinging $APP_URL to keep it alive..."
+          curl -I -s --fail "$APP_URL" > /dev/null
+          
+          if [ $? -eq 0 ]; then
+            echo "Successfully pinged the app."
+          else
+            echo "Failed to ping the app."
+            exit 1
+          fi
