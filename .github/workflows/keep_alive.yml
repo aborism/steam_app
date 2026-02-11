@@ -18,24 +18,21 @@ jobs:
 
       - name: Install Playwright
         run: |
-          npm init -y
-          npx -y playwright install chromium --with-deps
+          npm install playwright
+          npx playwright install chromium --with-deps
 
       - name: Visit Streamlit App with headless browser
         run: |
-          APP_URL="https://steam-arcana.streamlit.app/"
-          echo "Visiting $APP_URL with headless browser..."
-
           node -e "
           const { chromium } = require('playwright');
           (async () => {
             const browser = await chromium.launch();
             const page = await browser.newPage();
+            const url = 'https://steam-arcana.streamlit.app/';
 
-            console.log('Navigating to the app...');
-            await page.goto('$APP_URL', { waitUntil: 'networkidle', timeout: 120000 });
+            console.log('Navigating to ' + url + '...');
+            await page.goto(url, { waitUntil: 'networkidle', timeout: 120000 });
 
-            // アプリが完全に読み込まれるまで待機
             console.log('Waiting for app to fully load...');
             await page.waitForTimeout(10000);
 
