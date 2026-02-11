@@ -2,8 +2,8 @@ name: Streamlit Keep Alive
 
 on:
   schedule:
-    # 30分ごとに実行 (サーバーの負荷を考慮し、短すぎない間隔に設定)
-    - cron: '*/30 * * * *'
+    # 25分ごとに実行 (Streamlitのスリープ間隔より短く設定)
+    - cron: '*/25 * * * *'
   # 手動実行用 (テストや緊急時のために追加)
   workflow_dispatch:
 
@@ -11,17 +11,41 @@ jobs:
   keep_alive:
     runs-on: ubuntu-latest
     steps:
-      - name: Wake up Streamlit App
-        env:
-          # URLを直接ファイルに設定
-          APP_URL: "https://steam-arcana.streamlit.app/"
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Playwright
         run: |
-          echo "Pinging $APP_URL to keep it alive..."
-          curl -I -s --fail "$APP_URL" > /dev/null
-          
-          if [ $? -eq 0 ]; then
-            echo "Successfully pinged the app."
-          else
-            echo "Failed to ping the app."
-            exit 1
-          fi
+          npm init -y
+          npx -y playwright install chromium --with-deps
+
+      - name: Visit Streamlit App with headless browser
+        run: |
+          APP_URL="https://steam-arcana.streamlit.app/"
+          echo "Visiting $APP_URL with headless browser..."
+
+          node -e "
+          const { chromium } = require('playwright');
+          (async () => {
+            const browser = await chromium.launch();
+            const page = await browser.newPage();
+
+            console.log('Navigating to the app...');
+            await page.goto('$APP_URL', { waitUntil: 'networkidle', timeout: 120000 });
+
+            // アプリが完全に読み込まれるまで待機
+            console.log('Waiting for app to fully load...');
+            await page.waitForTimeout(10000);
+
+            const title = await page.title();
+            console.log('Page title: ' + title);
+            console.log('App is alive!');
+
+            await browser.close();
+          })().catch(err => {
+            console.error('Error:', err.message);
+            process.exit(1);
+          });
+          "
